@@ -21,7 +21,16 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--api-url', default='')
 ap.add_argument('--client-id', default='')
 ap.add_argument('--admin-url', default='')
+ap.add_argument('--no-config', action='store_true', help='忽略 deploy.config.json（產生未填設定的版本）')
 args = ap.parse_args()
+
+# 預設從專案根目錄的 deploy.config.json 讀取（內容皆為公開資訊：後端網址、OAuth 用戶端 ID、網站網址）。
+_cfg_path = ROOT / 'deploy.config.json'
+if _cfg_path.exists() and not args.no_config:
+    _cfg = json.loads(_cfg_path.read_text(encoding='utf-8'))
+    args.api_url = args.api_url or _cfg.get('api_url', '')
+    args.client_id = args.client_id or _cfg.get('client_id', '')
+    args.admin_url = args.admin_url or _cfg.get('admin_url', '')
 
 API_URL_RE = re.compile(r'^https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec$')
 CLIENT_RE = re.compile(r'^[0-9A-Za-z._-]+\.apps\.googleusercontent\.com$')

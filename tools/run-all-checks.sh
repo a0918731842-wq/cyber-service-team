@@ -11,6 +11,7 @@ run "靜態掃描：dist/apps-script"          node tools/security-scan.mjs dist
 run "靜態掃描：dist/standalone"           node tools/security-scan.mjs dist/standalone
 run "後端資安測試（模擬 Apps Script）"      node tools/test-backend.mjs
 run "前端 XSS 測試（惡意資料，有／無 CSP）"  node tools/test-frontend-xss.mjs
+run "登入流程測試（管理員／非管理員／過期）"    node tools/test-frontend-login.mjs
 run "三個交付版本的實機測試"                 node tools/test-builds.mjs
 echo
 [ $fail -eq 0 ] && echo "✅ 全部檢查通過" || echo "❌ 有檢查失敗，請看上方 FAIL 項目"

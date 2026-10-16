@@ -95,7 +95,15 @@ await browser(fileUrl, { init: `try{localStorage.setItem('team-site-local-v1', $
 
 // ================= 2. GitHub 版（靜態伺服器） =================
 console.log('\n[GitHub 版：靜態網站，設定檔尚未填入後端時]');
-const ghDir = path.join(DIST, 'github');
+const ghReal = fs.readFileSync(path.join(DIST, 'github', 'config.js'), 'utf8');
+if (fs.existsSync(path.join(here, '..', 'deploy.config.json'))) {
+  const dc = JSON.parse(fs.readFileSync(path.join(here, '..', 'deploy.config.json'), 'utf8'));
+  check('GitHub 版設定檔已填入正式的後端網址與用戶端 ID', ghReal.includes(dc.api_url) && ghReal.includes(dc.client_id));
+}
+// 以下測試「設定未填」的情境，所以用暫存複本並換成空白設定
+const ghDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gh-blank-'));
+for (const f of fs.readdirSync(path.join(DIST, 'github'))) fs.copyFileSync(path.join(DIST, 'github', f), path.join(ghDir, f));
+fs.writeFileSync(path.join(ghDir, 'config.js'), 'window.APP_CONFIG={MODE:"api",API_URL:"https://script.google.com/macros/s/請換成你的部署ID/exec",GOOGLE_CLIENT_ID:"請換成你的ClientID.apps.googleusercontent.com",ADMIN_URL:""};');
 const srv = http.createServer((req, res) => {
   const p = path.join(ghDir, decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '') || 'index.html');
   if (!p.startsWith(ghDir) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.writeHead(404); return res.end(); }
@@ -104,8 +112,7 @@ const srv = http.createServer((req, res) => {
 });
 await new Promise(r => srv.listen(0, r));
 const ghUrl = 'http://localhost:' + srv.address().port + '/index.html';
-const gcfg = fs.readFileSync(path.join(ghDir, 'config.js'), 'utf8');
-check('GitHub 版設定檔為 api 模式，且沒有任何密鑰', /MODE: "api"/.test(gcfg) && !/secret/i.test(gcfg));
+check('GitHub 版設定檔為 api 模式，且沒有任何密鑰', /MODE: "api"/.test(ghReal) && !/secret/i.test(ghReal));
 await browser(ghUrl, { steps: async ({ ev, csp, errs }) => {
   check('設定未填時退回示範資料，而不是對任意網址送出請求', /示範資料/.test(await ev(`document.getElementById('mode-banner').textContent`)));
   check('頁面正常載入', (await ev(`document.getElementById('home-title').textContent`)) === '山城資訊工作隊');

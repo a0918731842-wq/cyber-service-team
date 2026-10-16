@@ -67,8 +67,7 @@
       no_photos: '尚無照片。', no_news: '尚無消息。', no_history: '尚無資料。', no_contact: '尚未設定聯絡資訊。',
       no_values: '尚未設定。', team_default: '山城資訊工作隊', month_fmt: '{m} 月',
       toast_team: '團隊資訊已儲存', toast_member: '成員資料已儲存', toast_member_del: '已刪除成員',
-      toast_admin_add: '已新增管理員', toast_admin_del: '已取消管理員權限', toast_login_admin: '已登入管理員身分',
-      toast_not_admin: '此帳號不是管理員，僅能瀏覽。', toast_logout: '已登出',
+      toast_admin_add: '已新增管理員', toast_admin_del: '已取消管理員權限', toast_login_admin: '已登入管理員身分', toast_logout: '已登出',
       err_no_perm: '您沒有管理員權限。', err_team_name: '團隊名稱不可為空。', err_member_name: '姓名不可為空。',
       err_admin_fields: '姓名與 Email 皆為必填項目！', err_member_missing: '找不到這位成員。',
       err_img_type: '僅支援 PNG、JPG、JPEG 圖片！', err_img_size: '圖片不可超過 10 MB。',
@@ -118,8 +117,7 @@
       no_photos: 'No photos yet.', no_news: 'No news yet.', no_history: 'No entries yet.', no_contact: 'No contact information yet.',
       no_values: 'Not set yet.', team_default: 'Cyber Service Team', month_fmt: '{m}',
       toast_team: 'Team profile saved', toast_member: 'Member saved', toast_member_del: 'Member deleted',
-      toast_admin_add: 'Administrator added', toast_admin_del: 'Administrator removed', toast_login_admin: 'Signed in as administrator',
-      toast_not_admin: 'This account is not an administrator. View-only access.', toast_logout: 'Signed out',
+      toast_admin_add: 'Administrator added', toast_admin_del: 'Administrator removed', toast_login_admin: 'Signed in as administrator', toast_logout: 'Signed out',
       err_no_perm: 'You do not have administrator permission.', err_team_name: 'Team name is required.', err_member_name: 'Name is required.',
       err_admin_fields: 'Name and email are both required.', err_member_missing: 'Member not found.',
       err_img_type: 'Only PNG and JPG images are supported.', err_img_size: 'Image must be under 10 MB.',
@@ -543,8 +541,8 @@
       userEmail = info.email;
       isAdmin = !!info.isAdmin;
       applyAuthState();
+      // 管理員：載入管理員名單並顯示成功訊息。非管理員不顯示任何訊息，只是不會出現編輯功能。
       if (isAdmin) { loadAdminList(); showOk(t('toast_login_admin')); }
-      else showError(t('toast_not_admin'));
     }).catch(function(err) { showError(err.message); });
   }
 
