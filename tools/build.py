@@ -109,16 +109,7 @@ if args.client_id:
     code_gs = code_gs.replace("var BUILD_CLIENT_ID_ = '';", "var BUILD_CLIENT_ID_ = %s;" % json.dumps(args.client_id), 1)
 (asd / 'Code.gs').write_text(code_gs, encoding='utf-8')
 (asd / 'Index.html').write_text(inline_build('embedded', csp=False, frame_guard=False, admin_url=args.admin_url), encoding='utf-8')
-(asd / 'appsscript.json').write_text(json.dumps({
-    'timeZone': 'Asia/Taipei', 'exceptionLogging': 'STACKDRIVER', 'runtimeVersion': 'V8',
-    'oauthScopes': [
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive',
-        'https://www.googleapis.com/auth/script.external_request',
-        'https://www.googleapis.com/auth/script.send_mail'
-    ],
-    'webapp': {'executeAs': 'USER_DEPLOYING', 'access': 'ANYONE_ANONYMOUS'}
-}, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+shutil.copy(GS / 'appsscript.json', asd / 'appsscript.json')
 written.append(('apps-script', asd))
 
 # ---------- 3. 單機版（單一 HTML 檔） ----------
@@ -126,6 +117,10 @@ sa = DIST / 'standalone'
 sa.mkdir()
 (sa / '山城資訊工作隊-單機版.html').write_text(inline_build('local', csp=True, frame_guard=True), encoding='utf-8')
 written.append(('standalone', sa))
+
+# ---------- 同步 docs/（GitHub Pages 從 repo 的 docs/ 資料夾發佈） ----------
+shutil.rmtree(ROOT / 'docs', ignore_errors=True)
+shutil.copytree(gh, ROOT / 'docs')
 
 # ---------- 文件 ----------
 for doc in ('部署說明.md', '資安說明.md'):

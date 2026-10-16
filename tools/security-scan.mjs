@@ -56,6 +56,23 @@ check('後端沒有把使用者輸入送進 HtmlService（無伺服器端注入�
   check('後端只有 doGet / doPost / setup / getPublicDataForPage 能被瀏覽器直接呼叫（其餘函式名稱皆以 _ 結尾）', exposed.length === 0, exposed.join(', '));
 }
 
+{
+  // 程式用到的 Google 服務，必須在 appsscript.json 宣告對應的授權範圍；否則真實環境執行時會出現「權限不足」。
+  // （模擬環境不會檢查授權範圍，所以用靜態檢查補上。）
+  const mf = byExt('.json').find(f => path.basename(f) === 'appsscript.json');
+  const gsFiles = byExt('.gs');
+  if (mf && gsFiles.length) {
+    const scopes = JSON.parse(text(mf)).oauthScopes || [];
+    const code = gsFiles.map(text).join('\n');
+    const need = [['SpreadsheetApp', 'auth/spreadsheets'], ['DriveApp', 'auth/drive'], ['UrlFetchApp', 'auth/script.external_request'],
+      ['MailApp', 'auth/script.send_mail'], ['Session.getActiveUser', 'auth/userinfo.email'], ['Session.getEffectiveUser', 'auth/userinfo.email']];
+    const missing = need.filter(([api, sc]) => code.includes(api) && !scopes.some(s => s.endsWith(sc))).map(([api, sc]) => api + ' 需要 ' + sc);
+    check('appsscript.json 已宣告程式用到的所有授權範圍', missing.length === 0, missing.join('；'));
+    const unknown = scopes.filter(s => !need.some(([, sc]) => s.endsWith(sc)));
+    check('appsscript.json 沒有多餘的授權範圍（最小權限）', unknown.length === 0, unknown.join(', '));
+  }
+}
+
 console.log('\n[HTML 與 CSP]');
 for (const f of html) {
   const s = text(f);
